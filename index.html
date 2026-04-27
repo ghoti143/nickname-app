@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Nicknames</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+    body { font-family: 'Nunito', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-violet-100 via-pink-50 to-amber-100 flex items-center justify-center p-6">
+
+  <div class="w-full max-w-lg">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">⭐</div>
+      <h1 class="text-3xl font-black text-violet-700 tracking-tight">Today's Nicknames</h1>
+      <p id="date-display" class="text-base font-600 text-violet-400 mt-1"></p>
+    </div>
+
+    <!-- Cards -->
+    <div class="flex flex-col gap-4" id="nickname-cards"></div>
+
+    <!-- Footer -->
+    <p class="text-center text-xs text-violet-300 mt-8 font-semibold tracking-wide uppercase">Nicknames reset every midnight ✨</p>
+  </div>
+
+  <script>
+    const children = [
+      {
+        name: "Levi",
+        nicknames: [
+          "The Levinator", "Levi-athan", "Lev the Brave", "Captain Levi", "Levi Lightning",
+          "Sir Levi-a-Lot", "Levi Skywalker", "The Levmeister", "Levi-tate", "Levrocket",
+          "Levi-Wan Kenobi", "Turbo Levi", "Levi the Great", "Lev-tastic", "Levi Thunder",
+          "The Levster", "Levi-osaurus", "Golden Levi", "Levi the Mighty", "Superlev"
+        ]
+      },
+      {
+        name: "Peter",
+        nicknames: [
+          "Pete the Champ", "Petey Pie", "Peter Pan", "The Peterinator", "Super Pete",
+          "Pete Lightning", "Peter the Brave", "Petey McAwesome", "Captain Peter", "Pete-zilla",
+          "Petey Rocket", "The Petermeister", "Pete the Great", "Sir Peter", "Pete-tastic",
+          "Petey Thunder", "Peter the Mighty", "Petester", "P-Rock", "Petey-saurus"
+        ]
+      },
+      {
+        name: "Elizabeth",
+        nicknames: [
+          "Eliza-boom", "Queen Lizzie", "Busy Bee Lizzy", "Eliza the Brave", "Lady E",
+          "Liz the Whiz", "Princess Eliza", "Elizabeast", "Super Lizzie", "Eliza-tron",
+          "Lizaroo", "The Elizinator", "Betsy the Bold", "Eliza-magic", "Liz Lightning",
+          "Elizasaurus Rex", "Bess the Best", "Eliza Sparkle", "Lady Lizinator", "E-Rocket"
+        ]
+      },
+      {
+        name: "Katherine",
+        nicknames: [
+          "Kat Attack", "Super Kathy", "Kater-tot", "Kitty Rocket", "Kate the Great",
+          "The Katinator", "Kathy Boom", "Queen Kate", "Kater-saurus", "Lady K",
+          "Kathy Lightning", "Kat Whiz", "Kater-meister", "Princess Kathy", "K-Force",
+          "Kathy the Mighty", "Kat-tastic", "Super Kate", "Kater-zilla", "K-Lightning"
+        ]
+      }
+    ];
+
+    const cardColors = [
+      { bg: "bg-violet-500", light: "bg-violet-100", text: "text-violet-700", emoji: "🦁" },
+      { bg: "bg-pink-500",   light: "bg-pink-100",   text: "text-pink-700",   emoji: "🐯" },
+      { bg: "bg-amber-500",  light: "bg-amber-100",  text: "text-amber-700",  emoji: "🦊" },
+      { bg: "bg-teal-500",   light: "bg-teal-100",   text: "text-teal-700",   emoji: "🐢" }
+    ];
+
+    // Seeded RNG so all devices get the same result for the same date
+    function seededRandom(seed) {
+      let s = seed;
+      return function() {
+        s = (s * 1664525 + 1013904223) & 0xffffffff;
+        return (s >>> 0) / 0xffffffff;
+      };
+    }
+
+    function getDailySeed() {
+      const now = new Date();
+      // YYYYMMDD as integer — same for everyone regardless of timezone offset within ±12h of US timezones
+      return now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    function render() {
+      document.getElementById('date-display').textContent = formatDate(new Date());
+
+      const seed = getDailySeed();
+      const rng = seededRandom(seed);
+      const container = document.getElementById('nickname-cards');
+      container.innerHTML = '';
+
+      children.forEach((child, i) => {
+        const color = cardColors[i];
+        const idx = Math.floor(rng() * child.nicknames.length);
+        const nickname = child.nicknames[idx];
+
+        const card = document.createElement('div');
+        card.className = `${color.light} rounded-2xl p-5 flex items-center gap-5 shadow-sm border border-white`;
+        card.innerHTML = `
+          <div class="${color.bg} text-white rounded-xl w-14 h-14 flex items-center justify-center text-2xl shadow-md flex-shrink-0">
+            ${color.emoji}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-800 uppercase tracking-widest ${color.text} opacity-60 mb-0.5">${child.name}</p>
+            <p class="text-xl font-black ${color.text} leading-tight truncate">${nickname}</p>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    render();
+
+    // Refresh automatically at midnight
+    function msUntilMidnight() {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      return midnight - now;
+    }
+    setTimeout(() => { render(); setInterval(render, 86400000); }, msUntilMidnight());
+  </script>
+
+</body>
+</html>
